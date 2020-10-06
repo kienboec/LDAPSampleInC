@@ -1,0 +1,1 @@
+docker exec -it ldap-sample-instance bash

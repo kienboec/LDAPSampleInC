@@ -1,1 +1,1 @@
-# LDAPSampleInC
+# LDAP Sample in C
