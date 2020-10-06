@@ -6,10 +6,7 @@ ldapsearch ( see [manual](https://linux.die.net/man/1/ldapsearch) )
 
 ldapsearch -x -LLL '(uid=FILTERSTRING)' -D"CURRENTUSERCREDENTIALS" -W dn cn uid -ZZ -d 5
 
-* FILTERSTRING: a mask to fetch all users matching it e.g.: if19b00* \
-  ATTENTION: you are limited to only a few entries allowed in the recordset
-* CURRENTUSERCREDENTIALS: your uid,ou,dc information
-
+Parameters: 
 
 * -x: simple authentication
 * -LLL: restricts the output to LDIFv1, disables comments, disables printing of the LDIF version
@@ -19,6 +16,14 @@ ldapsearch -x -LLL '(uid=FILTERSTRING)' -D"CURRENTUSERCREDENTIALS" -W dn cn uid 
 * attributes to display
 * -ZZ: TLS (with required successfull TLS operation)
 * -d: debugLevel (e.g.: 5)
+
+
+Variables: 
+
+* FILTERSTRING: a mask to fetch all users matching it e.g.: if19b00* \
+  ATTENTION: you are limited to only a few entries allowed in the recordset
+* CURRENTUSERCREDENTIALS: your uid,ou,dc information
+
 
 see ldapsearch.sh using environment variables
 
