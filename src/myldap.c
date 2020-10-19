@@ -62,6 +62,7 @@ int main()
        &ldapVersion);             // IN-Value
    if (rc != LDAP_OPT_SUCCESS)
    {
+      // https://www.openldap.org/software/man.cgi?query=ldap_err2string&sektion=3&apropos=0&manpath=OpenLDAP+2.4-Release
       fprintf(stderr, "ldap_set_option(PROTOCOL_VERSION): %s\n", ldap_err2string(rc));
       ldap_unbind_ext_s(ldapHandle, NULL, NULL);
       return EXIT_FAILURE;

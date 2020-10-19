@@ -1,6 +1,6 @@
 # LDAP client in Console
 
-ldapsearch ( see [manual](https://linux.die.net/man/1/ldapsearch) )
+ldapsearch ( see [manual](https://linux.die.net/man/1/ldapsearch) and [ldaputils](https://wiki.debian.org/LDAP/LDAPUtils))
 
 ## Sample Usage
 
