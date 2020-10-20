@@ -2,8 +2,9 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ldap.h>
+#include "mypw.h"
 
-int main()
+int main(int argc, char *argv[])
 {
    ////////////////////////////////////////////////////////////////////////////
    // LDAP config
@@ -12,24 +13,49 @@ int main()
    const int ldapVersion = LDAP_VERSION3;
 
    // read username (bash: export ldapuser=<yourUsername>)
-   char ldapBindUser[128];
-   const char *rawLdapUser = getenv("ldapuser");
-   if (rawLdapUser == NULL)
+   char ldapBindUser[256];
+   char rawLdapUser[128];
+   if (argc >= 3 && strcmp(argv[1], "--user") == 0)
    {
-      printf("(user not found... set to empty string)");
-      strcpy(ldapBindUser, "");
+      strcpy(rawLdapUser, argv[2]);
+      sprintf(ldapBindUser, "uid=%s,ou=people,dc=technikum-wien,dc=at", rawLdapUser);
+      printf("user set to: %s\n", ldapBindUser);
    }
    else
    {
-      sprintf(ldapBindUser, "uid=%s,ou=people,dc=technikum-wien,dc=at", rawLdapUser);
+      const char *rawLdapUserEnv = getenv("ldapuser");
+      if (rawLdapUserEnv == NULL)
+      {
+         printf("(user not found... set to empty string)\n");
+         strcpy(ldapBindUser, "");
+      }
+      else
+      {
+         sprintf(ldapBindUser, "uid=%s,ou=people,dc=technikum-wien,dc=at", rawLdapUserEnv);
+         printf("user based on environment variable ldapuser set to: %s\n", ldapBindUser);
+      }
    }
 
    // read password (bash: export ldappw=<yourPW>)
-   const char *ldapBindPassword = getenv("ldappw");
-   if (ldapBindPassword == NULL)
+   char ldapBindPassword[256];
+   if (argc == 4 && strcmp(argv[3], "--pw") == 0)
    {
-      printf("(pw not found... set to empty string)");
-      ldapBindPassword = "";
+      strcpy(ldapBindPassword, getpass());
+      printf("pw taken over from commandline\n");
+   }
+   else
+   {
+      const char *ldapBindPasswordEnv = getenv("ldappw");
+      if (ldapBindPasswordEnv == NULL)
+      {
+         strcpy(ldapBindPassword, "");
+         printf("(pw not found... set to empty string)\n");
+      }
+      else
+      {
+         strcpy(ldapBindPassword, ldapBindPasswordEnv);
+         printf("pw taken over from environment variable ldappw\n");
+      }
    }
 
    // search settings
@@ -48,7 +74,7 @@ int main()
    rc = ldap_initialize(&ldapHandle, ldapUri);
    if (rc != LDAP_SUCCESS)
    {
-      fprintf(stderr, "ldap_init failed");
+      fprintf(stderr, "ldap_init failed\n");
       return EXIT_FAILURE;
    }
    printf("connected to LDAP server %s\n", ldapUri);
@@ -171,7 +197,9 @@ int main()
    // https://linux.die.net/man/3/ldap_first_entry
    // https://linux.die.net/man/3/ldap_next_entry
    LDAPMessage *searchResultEntry;
-   for (searchResultEntry = ldap_first_entry(ldapHandle, searchResult); searchResultEntry != NULL; searchResultEntry = ldap_next_entry(ldapHandle, searchResultEntry))
+   for (searchResultEntry = ldap_first_entry(ldapHandle, searchResult);
+        searchResultEntry != NULL;
+        searchResultEntry = ldap_next_entry(ldapHandle, searchResultEntry))
    {
       /////////////////////////////////////////////////////////////////////////
       // Base Information of the search result entry
@@ -183,13 +211,15 @@ int main()
       // https://linux.die.net/man/3/ldap_first_attribute
       // https://linux.die.net/man/3/ldap_next_attribute
       //
-      // berptr: berptr, a pointer to a BerElement it has allocated to keep 
-      //         track of its current position. This pointer should be passed 
-      //         to subsequent calls to ldap_next_attribute() and is used to 
+      // berptr: berptr, a pointer to a BerElement it has allocated to keep
+      //         track of its current position. This pointer should be passed
+      //         to subsequent calls to ldap_next_attribute() and is used to
       //         effectively step through the entry's attributes.
       BerElement *ber;
       char *searchResultEntryAttribute;
-      for (searchResultEntryAttribute = ldap_first_attribute(ldapHandle, searchResultEntry, &ber); searchResultEntryAttribute != NULL; searchResultEntryAttribute = ldap_next_attribute(ldapHandle, searchResultEntry, ber))
+      for (searchResultEntryAttribute = ldap_first_attribute(ldapHandle, searchResultEntry, &ber);
+           searchResultEntryAttribute != NULL;
+           searchResultEntryAttribute = ldap_next_attribute(ldapHandle, searchResultEntry, ber))
       {
          BerValue **vals;
          if ((vals = ldap_get_values_len(ldapHandle, searchResultEntry, searchResultEntryAttribute)) != NULL)
@@ -204,7 +234,7 @@ int main()
          // free memory
          ldap_memfree(searchResultEntryAttribute);
       }
-      // free memory 
+      // free memory
       if (ber != NULL)
       {
          ber_free(ber, 0);
@@ -213,17 +243,16 @@ int main()
       printf("\n");
    }
 
-   // free memory 
+   // free memory
    ldap_msgfree(searchResult);
 
    ////////////////////////////////////////////////////////////////////////////
    // https://linux.die.net/man/3/ldap_unbind_ext_s
    // int ldap_unbind_ext_s(
-   //       LDAP *ld, 
-   //       LDAPControl *sctrls[], 
+   //       LDAP *ld,
+   //       LDAPControl *sctrls[],
    //       LDAPControl *cctrls[]);
    ldap_unbind_ext_s(ldapHandle, NULL, NULL);
-
 
    return EXIT_SUCCESS;
 }

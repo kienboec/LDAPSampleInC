@@ -33,6 +33,8 @@ clean:
 ./obj/ldapclient.o: myldap.c
 	${CC} ${CFLAGS} -o obj/ldapclient.o myldap.c -c
 
+./obj/mypw.o: mypw.c
+	${CC} ${CFLAGS} -o obj/mypw.o mypw.c -c
 
-./bin/ldapclient: ./obj/ldapclient.o
-	${CC} ${CFLAGS} -o bin/ldapclient obj/ldapclient.o ${LIBS}
+./bin/ldapclient: ./obj/ldapclient.o ./obj/mypw.o
+	${CC} ${CFLAGS} -o bin/ldapclient obj/mypw.o obj/ldapclient.o ${LIBS}
