@@ -27,6 +27,19 @@ Variables:
 
 see ldapsearch.sh using environment variables
 
+### Pitfall: MacOs
+
+In case you are using a Mac and you are getting an error with the sample above 
+(something like "bind with no password") you need to consider reordering the parameters 
+(internal implementation of getopt does not reorder parameters as other implementations used to do it).
+
+So try to use the command in this parameter-order:
+```
+ldapsearch -x -LLL -D"CURRENTUSERCREDENTIALS" -W -ZZ -d 5 '(uid=FILTERSTRING)' dn cn uid
+```
+
+this will bind the user before executing the actual call.
+
 # Related Config Files
 
 /etc/ldap/ldap.conf
